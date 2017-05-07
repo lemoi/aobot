@@ -1,0 +1,14 @@
+{
+  "name": "aobot",
+  "version": "0.0.0",
+  "description": "A development tool used for debugging and deployment.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Wyatt Hou",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.15.2"
+  }
+}
