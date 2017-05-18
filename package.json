@@ -9,6 +9,9 @@
   "author": "Wyatt Hou",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.15.2"
-  }
+    "express": "^4.15.2",
+    "fis-kernel": "^2.0.19",
+    "follow-redirects": "^1.2.3"
+  },
+  "devDependencies": {}
 }
