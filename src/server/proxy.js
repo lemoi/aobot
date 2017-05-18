@@ -13,6 +13,7 @@ const proxy = {
             method: req.method,
             headers: req.headers,
             path: req.path,
+            timeout: 3000
         }, proxy.remote);
 
         if (search !== null) {
@@ -32,6 +33,10 @@ const proxy = {
             next();
         });
 
+        req.on('error', function (err) {
+            console.log('error: request error -> ' + req.url + '. ');
+        });
+        
         req.end();
     }
 };

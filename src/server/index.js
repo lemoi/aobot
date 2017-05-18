@@ -18,15 +18,16 @@ app.use('/', response.func);
 app.use('/', proxy.func);
 app.use('/', mapping.func);
 
-function run() {
+function run(port, cb) {
     const server = http.createServer();
     server.on('request', app);
     server.on('connect', connectHandle); // https
 
-    server.listen(8888, '0.0.0.0');
+    server.listen(port, cb);
 }
 
 const config = {
+
     setMapping: function (map) {
         mapping.map = map;
     },
@@ -36,8 +37,8 @@ const config = {
         proxy.remote.port = port;
     },
 
-    seFilter: function (filter) {
-        response.filter = filter;
+    setRules: function (rules) {
+        response.rules = rules;
     }
 }
 

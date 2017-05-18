@@ -7,14 +7,43 @@ Features should included:
 1. The repository depended with `fis` can run in the local environment.
 2. It is easy enough to configure when debugging or testing in the mobile phone.
 
+### Install
+> sudo npm install -g byted-aobot
 
-> openssl genrsa -out privatekey.pem 1024
-> openssl req -new -key privatekey.pem -out certrequest
-> openssl x509 -req -in certrequest.csr -signkey privatekey.pem -out certificate.pem
+### How to use?
 
-privatekey.pem: 私钥
+At the first step, you should create a file called  `aobot-conf.js` in your the project directory. 
 
-certrequest.csr: CSR证书签名
+Note: it's better to add `aobot-conf.js` to the `.gitignore` list.
 
-certificate.pem: 证书文件
+The following is an exmaple of `ssad_fe/creative_wap`.
 
+```js
+module.exports = {
+// development server ip and port
+    remote: {
+        ip: 'xx.x.xx.xx', 
+        port: xxxx
+    },
+// binding local port
+    local: {
+        port: xxxx
+    },
+// mapping rules
+    rules: [{
+        domain: ['ad.toutiao.com', 'i.snssdk.com'],
+        rule:[{
+            path: "^/static/(.*)",
+            resource: "/$1"
+        },
+        {
+            path: "/ad/m/index/"//,
+            //resource: "/template/creative_wap/page/home.html"
+        }]
+    }]
+}
+```
+
+Second, login in your dev-server and open the corresponding backend service.
+
+Finally, run `aobot` in your project directory.

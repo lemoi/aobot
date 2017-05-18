@@ -1,13 +1,13 @@
 const net = require('net');
 
 module.exports = function (req, socket, head) {
+    
     try {
-        
         var requestOptions = {
             host: req.url.split(':')[0],
             port: req.url.split(':')[1] || 443
         };
-
+        console.log(req)
         connectRemote(requestOptions, socket);
 
         function ontargeterror(e) {

@@ -1,12 +1,17 @@
 const url = require('url');
 const request = require('follow-redirects').http.request;
+const path = require('path');
+const utils = require('./utils');
 
 const response = {
-    filter: null, // RegExp
+    rules: null, // RegExp
     func: function (req, res, next) {
         const urlObj = url.parse(req.url);
 
-        if (response.filter.test(urlObj.hostname + urlObj.path)) {
+        const rule = utils.matchRule(response.rules, urlObj.hostname, urlObj.pathname);
+
+        if (rule !== null) {
+            res.locals.real_path = urlObj.pathname.replace(rule.path, rule.resource);
             next();
             return;
         }
@@ -16,7 +21,8 @@ const response = {
             headers: req.headers,
             path: urlObj.path,
             host: urlObj.hostname,
-            port: urlObj.port || 80
+            port: urlObj.port || 80,
+            timeout: 3000
         };
 
         const handle = request(options, (result) => {
@@ -38,6 +44,10 @@ const response = {
             });
         });
 
+        handle.on('error', function (err) {
+            console.log('error: request error -> ' + req.url + '. ');
+        });
+        
         handle.end();
     }
 };
