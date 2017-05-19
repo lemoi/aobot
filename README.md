@@ -8,6 +8,7 @@ Features should be included:
 2. It is easy enough to configure when debugging or testing in the mobile phone.
 
 ### Install
+
 > sudo npm install -g byted-aobot
 
 ### How to use?
