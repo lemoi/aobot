@@ -18,7 +18,14 @@ module.exports = {
             path: "/ad/m/index/"//,
             //resource: "/template/creative_wap/page/home.html"
         }
-    ]
+    ],
+    fis: {
+        deploy: { 
+            item: 'houwenjie',
+            upload: '/template',
+            devSeverUsr: 'houwenjie'
+        }
+    }
 }
 
 **/    
@@ -28,7 +35,7 @@ const path = require('path');
 
 const file = 'aobot-conf.js';
 
-const prjRoot = path.join(process.cwd(), 'pgcpromotion_mobile');
+const prjRoot = process.cwd();
 
 let config;
 

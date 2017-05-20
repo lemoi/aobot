@@ -23,9 +23,11 @@ for (let key in net){
 
 server.config.setRules(config.rules);
 server.config.setProxy(config.remote.ip, config.remote.port);
-server.config.setMapping(fis(prjRoot));
 
-server.run(config.local.port, function () {
-    process.stdout.write('Aobot server is running. \n');
-    process.stdout.write(`You can access it in the address 127.0.0.1:${config.local.port} or ${localIp}:${config.local.port}. \n`);
+fis(prjRoot, config.fis.deploy, function (collection) {
+    server.config.setMapping(collection);
+    server.run(config.local.port, function () {
+        process.stdout.write('Aobot server is running. \n');
+        process.stdout.write(`You can access it in the address 127.0.0.1:${config.local.port} or ${localIp}:${config.local.port}. \n`);
+    });
 });

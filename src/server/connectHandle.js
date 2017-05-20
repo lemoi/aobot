@@ -7,8 +7,6 @@ module.exports = function (req, socket, head) {
             host: req.url.split(':')[0],
             port: req.url.split(':')[1] || 443
         };
-        console.log(req)
-        connectRemote(requestOptions, socket);
 
         function ontargeterror(e) {
             console.log(req.url + " Tunnel error: " + e);
