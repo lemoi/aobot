@@ -41,7 +41,15 @@ module.exports = {
             path: "/ad/m/index/"//,
             //resource: "/template/creative_wap/page/home.html"
         }]
-    }]
+    }],
+// fis deploy config
+    fis: {
+        deploy: { 
+            item: 'xxxxxx', // -d
+            upload: '/template',
+            devSeverUsr: 'xxxxxx'
+        }
+    }
 }
 ```
 

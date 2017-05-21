@@ -1,6 +1,6 @@
 {
   "name": "byted-aobot",
-  "version": "0.2.1",
+  "version": "0.2.5",
   "description": "A development tool used for debugging and deployment.",
   "main": "index.js",
   "scripts": {
@@ -14,8 +14,7 @@
   "dependencies": {
     "chokidar": "^1.7.0",
     "express": "^4.15.2",
-    "fis-bytedance": "0.0.8",
-    "follow-redirects": "^1.2.3"
+    "fis-bytedance": "0.0.8"
   },
   "devDependencies": {}
 }

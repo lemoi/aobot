@@ -38,7 +38,7 @@ function runRcv(usr, address, port, cb) {
 module.exports = function (src, deploy, cb) {
     fis.project.setProjectRoot(src);
     require(path.join(src, conf));
-
+    //console.log(fis.config.get('settings'))
     const files = fis.project.getSource();
     const collection = {};
     const ignoredReg = /[\\\/][_\-.\s\w]+$/i;
@@ -54,49 +54,11 @@ module.exports = function (src, deploy, cb) {
     }
 
     const opt = {};
-    opt.afterEach = function (file){
-        const release = file.release;
-        let content = file._content;
 
-        if(release){
-            collection[release] = content;
-
-            if (deployConfig && deploy.upload && syn.test(file.release)) {
-                deployConfig.forEach(function (rule) {
-
-                    if (!rule.from
-                        ||(file.release.startsWith(rule.from)
-                        && fis.util.filter(file.release, rule.include, rule.exclude))) {
-
-                        if(file.isText() && content.length) {
-
-                            if(rule.replace && rule.replace.from) {
-
-                                let reg = rule.replace.from;
-                                
-                                if(typeof reg === 'string') {
-                                    reg = new RegExp(fis.util.escapeReg(reg), 'g');
-                                } else if(!(reg instanceof RegExp)) {
-                                    process.stderr.write('invalid deploy.replace.from [' + reg + ']');
-                                }
-
-                                content = content.replace(reg, rule.replace.to);
-                            }
-                            fis.util.upload(rule.receiver, null, { to : rule.to + release }, content, file.subpath,
-                                function (err, data) {
-                                    if (err) {
-                                        process.stderr.write('error: upload error -> from: ' + release
-                                        + 'to: ' + rule.to + release + '. \n');
-                                    } else {
-                                        process.stdout.write('upload: ' + release + '. \n');
-                                    }
-                            });
-                        }
-                    } 
-                });   
-            }
-        }
-    };
+    fis.util.map(files, function (subpath, file) {
+        opt.srcCache = opt.srcCache || [];
+        opt.srcCache.push(file.realpath);
+    });
 
     function listener(type){
         return function (path) {
@@ -131,30 +93,85 @@ module.exports = function (src, deploy, cb) {
         };
     }
 
-    chokidar.watch(src, {
-        ignored : /(^|[\/\\])\../,
-        usePolling: fis.config.get('project.watch.usePolling', null),
-        persistent: true,
-        ignoreInitial: true
-    })
-    .on('add', listener('add'))
-    .on('change', listener('change'))
-    .on('unlink', listener('unlink'))
-    .on('unlinkDir', listener('unlinkDir'))
-    .on('error', function(err) {
-        throw err;
-    });
+    function watch() {
+        chokidar.watch(src, {
+            ignored : /(^|[\/\\])\../,
+            usePolling: fis.config.get('project.watch.usePolling', null),
+            persistent: true,
+            ignoreInitial: true
+        })
+        .on('add', listener('add'))
+        .on('change', listener('change'))
+        .on('unlink', listener('unlink'))
+        .on('unlinkDir', listener('unlinkDir'))
+        .on('error', function(err) {
+            throw err;
+        });
+    }
 
-    fis.util.map(files, function (subpath, file) {
-        opt.srcCache = opt.srcCache || [];
-        opt.srcCache.push(file.realpath);
-    });
+    function upload(file) {
+        if (!syn.test(file.release)) {
+            return;
+        }
+
+        const release = file.release;
+        let content = file._content;
+
+        deployConfig.forEach(function (rule) {
+
+            if (!rule.from
+                ||(file.release.startsWith(rule.from)
+                && fis.util.filter(file.release, rule.include, rule.exclude))) {
+
+                if(file.isText() && content.length) {
+
+                    if(rule.replace && rule.replace.from) {
+
+                        let reg = rule.replace.from;
+                        
+                        if(typeof reg === 'string') {
+                            reg = new RegExp(fis.util.escapeReg(reg), 'g');
+                        } else if(!(reg instanceof RegExp)) {
+                            process.stderr.write('invalid deploy.replace.from [' + reg + ']');
+                        }
+
+                        content = content.replace(reg, rule.replace.to);
+                    }
+                    fis.util.upload(rule.receiver, null, { to : rule.to + release }, content, file.subpath,
+                        function (err, data) {
+                            if (err) {
+                                process.stderr.write('error: upload error -> from: ' + release
+                                + 'to: ' + rule.to + release + '. \n');
+                            } else {
+                                process.stdout.write('upload: ' + release + '. \n');
+                            }
+                    });
+                }
+            } 
+        });
+    }
 
     function release(opt) {
         for (let p in collection) {
             delete collection[p];
         }
-        fis.release(opt);
+
+        fis.release(opt, function (ret) {
+
+            fis.util.map(ret.src, function (subpath, file) {
+                collection[file.release] = file._content;
+                deploy.upload && deployConfig && upload(file);
+            });
+
+            fis.util.map(ret.ids, function (id, file) {
+                if (!collection.hasOwnProperty(file.release)) {
+                    collection[file.release] = file._content;
+                    deploy.upload && deployConfig && upload(file);
+                }
+            });
+
+        });
+
         process.stdout.write('Fis released successfully! \n');
     }
 
@@ -173,7 +190,7 @@ module.exports = function (src, deploy, cb) {
             const usr = deploy.devSeverUsr || deploy.item;
             runRcv(usr, receiver.hostname, receiver.port, function (type, data) {
 
-                if (type === 'success'){
+                if (type == 'success'){
                     process.stdout.write('Receiver(' + rcv + ') started successfully! \n');
                     release(opt);
                     cb(collection);
@@ -187,6 +204,7 @@ module.exports = function (src, deploy, cb) {
         release(opt);
         cb(collection);
     }
-
+    watch();
+    
     return collection;
 }

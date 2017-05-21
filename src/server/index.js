@@ -17,8 +17,8 @@ app.use('/', function (req, res, next) {
 });
 
 app.use('/', response.func);
-app.use('/', proxy.func);
 app.use('/', mapping.func);
+app.use('/', proxy.func);
 
 // const httpsOptions = {
 //     key: fs.readFileSync(path.join(__dirname, '../ssl/server.key')),
@@ -31,7 +31,7 @@ function run(port, cb) {
     // const httpsServer = https.createServer(httpsOptions, app);
 
     server.on('request', app);
-    server.on('connect', connectHandle); // https
+    server.on('connect', connectHandle); // https retransmission
 
     server.listen(port, cb);
     //httpServer.listen(port, cb);
