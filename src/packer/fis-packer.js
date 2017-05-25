@@ -4,6 +4,8 @@ const chokidar = require('chokidar');
 const conf = 'fis-conf.js';
 const spawn = require('child_process').spawn;
 const url = require('url');
+const genBrowserCode = require('../sync/browser');
+const socket = require('../sync/socket');
 
 function runRcv(usr, address, port, cb) {
     const ssh = spawn('ssh', [usr + '@' + address, '\""fisrcv ' + port + '\""']);
@@ -35,14 +37,14 @@ function runRcv(usr, address, port, cb) {
 }
 
 // @return mapping src
-module.exports = function (src, deploy, cb) {
+module.exports = function (src, deploy, syncPort, cb) {
     fis.project.setProjectRoot(src);
     require(path.join(src, conf));
     //console.log(fis.config.get('settings'))
     const files = fis.project.getSource();
     const collection = {};
     const ignoredReg = /[\\\/][_\-.\s\w]+$/i;
-
+    const browserCode = genBrowserCode(syncPort);
     const syn = RegExp(deploy.upload);
 
     let deployConfig;
@@ -88,6 +90,7 @@ module.exports = function (src, deploy, cb) {
                 timer = setTimeout(function() {
                     process.stdout.write(`modify: ${path}. \n`);
                     release(opt);
+                    socket.refresh();
                 }, 500);
             }
         };
@@ -115,7 +118,7 @@ module.exports = function (src, deploy, cb) {
         }
 
         const release = file.release;
-        let content = file._content;
+        let content = file.getContent();
 
         deployConfig.forEach(function (rule) {
 
@@ -155,23 +158,27 @@ module.exports = function (src, deploy, cb) {
         for (let p in collection) {
             delete collection[p];
         }
-
         fis.release(opt, function (ret) {
 
             fis.util.map(ret.src, function (subpath, file) {
-                collection[file.release] = file._content;
+                if (file.isHtmlLike) {
+                    file.setContent(file.getContent() + browserCode);
+                }
+                collection[file.release] = file.getContent();
                 deploy.upload && deployConfig && upload(file);
             });
 
             fis.util.map(ret.ids, function (id, file) {
                 if (!collection.hasOwnProperty(file.release)) {
-                    collection[file.release] = file._content;
+                    if (file.isHtmlLike) {
+                        file.setContent(file.getContent() + browserCode);
+                    }
+                    collection[file.release] = file.getContent();
                     deploy.upload && deployConfig && upload(file);
                 }
             });
 
         });
-
         process.stdout.write('Fis released successfully! \n');
     }
 

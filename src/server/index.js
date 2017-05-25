@@ -7,7 +7,7 @@ const http = require('http');
 const https = require('https');
 const path = require('path');
 const fs = require('fs');
-
+const socket = require('../sync/socket');
 const app = express();
 
 app.use('/', function (req, res, next) {
@@ -32,6 +32,7 @@ function run(port, cb) {
 
     server.on('request', app);
     server.on('connect', connectHandle); // https retransmission
+    socket.start(server);
 
     server.listen(port, cb);
     //httpServer.listen(port, cb);

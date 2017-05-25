@@ -24,7 +24,7 @@ for (let key in net){
 server.config.setRules(config.rules);
 server.config.setProxy(config.remote.ip, config.remote.port);
 
-fis(prjRoot, config.fis.deploy, function (collection) {
+fis(prjRoot, config.fis.deploy, config.local.port, function (collection) {
     server.config.setMapping(collection);
 
     server.run(config.local.port, function () {

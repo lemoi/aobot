@@ -8,7 +8,10 @@ const proxy = {
     },
     func: function (req, res, next) {
         const search = url.parse(req.url).search;
-
+        if (req.path === '/socket.io/') {
+            next();
+            return;
+        }
         const options = Object.assign({
             method: req.method,
             headers: req.headers,
