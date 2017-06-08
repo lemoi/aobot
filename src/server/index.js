@@ -45,7 +45,8 @@ const config = {
         mapping.map = map;
     },
 
-    setProxy: function (host, port) {
+    setProxy: function (https, host, port) {
+        proxy.remote.https = https;
         proxy.remote.host = host;
         proxy.remote.port = port;
     },
