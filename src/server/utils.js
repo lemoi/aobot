@@ -1,4 +1,4 @@
-/* 
+/*
 [{
     domain: ["ad.toutiao.com", "i.snssdk.com"],
     rule: [{
@@ -88,11 +88,13 @@ module.exports.mime = {
     '.cur' : 'application/octet-stream'
 };
 
-
+const http = require('http');
+const https = require('https')
 
 module.exports.request = function(options, req, res) {
+    let agent = options.https ? https : http
 
-    var remoteRequest = require('http').request(options, function(remoteResponse) {
+    var remoteRequest = agent.request(options, function(remoteResponse) {
 
         remoteResponse.headers['proxy-agent'] = 'Aobot Proxy';
 

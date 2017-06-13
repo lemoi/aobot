@@ -9,7 +9,7 @@ const mapping = {
         if (mapping.map.hasOwnProperty(res.locals.real_path)) {
             // don't deflate for local resources
             // res.removeHeader('content-encoding');
-            res.setHeader('Content-Type', utils.mime[path.extname(req.path)]);
+            res.setHeader('Content-Type', utils.mime[path.extname(res.locals.real_path)]);
             res.statusCode = 200;
 
             res.send(mapping.map[res.locals.real_path]);

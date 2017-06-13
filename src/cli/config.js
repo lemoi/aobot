@@ -1,4 +1,4 @@
-/** 
+/**
 aobot-config.js
 
 module.exports = {
@@ -20,7 +20,7 @@ module.exports = {
         }
     ],
     fis: {
-        deploy: { 
+        deploy: {
             item: 'houwenjie',
             upload: '/template',
             devSeverUsr: 'houwenjie'
@@ -28,7 +28,7 @@ module.exports = {
     }
 }
 
-**/    
+**/
 
 const fs = require('fs');
 const path = require('path');
@@ -41,6 +41,7 @@ let config;
 
 try {
     config = require(path.join(prjRoot, file));
+    config.fis = config.fis || {}
 } catch (e) {
     process.stderr.write('Can\'t find the config file -> aobot-config.js. \n');
     throw e;

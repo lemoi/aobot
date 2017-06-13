@@ -22,9 +22,14 @@ for (let key in net){
 }
 
 server.config.setRules(config.rules);
-server.config.setProxy(config.remote.ip, config.remote.port);
+server.config.setProxy(config.remote.https, config.remote.host, config.remote.port);
 
-fis(prjRoot, config.fis.deploy, config.local.port, function (collection) {
+fis({
+  src: prjRoot,
+  globalVarInjection: config.globalVarInjection,
+  deploy: config.fis.deploy,
+  syncPort: config.local.port
+}, function (collection) {
     server.config.setMapping(collection);
 
     server.run(config.local.port, function () {
