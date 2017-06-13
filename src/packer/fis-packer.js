@@ -6,7 +6,6 @@ const spawn = require('child_process').spawn;
 const url = require('url');
 const genBrowserCode = require('../sync/browser');
 const socket = require('../sync/socket');
-const log = require('../server/log')
 
 function runRcv(usr, address, port, cb) {
     const ssh = spawn('ssh', [usr + '@' + address, '\""fisrcv ' + port + '\""']);
@@ -38,25 +37,23 @@ function runRcv(usr, address, port, cb) {
 }
 
 // @return mapping src
-module.exports = function ({src, globalVarInjection, deploy, syncPort}, cb) {
+module.exports = function (src, deploy, syncPort, cb) {
     fis.project.setProjectRoot(src);
     require(path.join(src, conf));
     //console.log(fis.config.get('settings'))
     const files = fis.project.getSource();
     const collection = {};
     const ignoredReg = /[\\\/][_\-.\s\w]+$/i;
-    const browserSyncCode = genBrowserCode(syncPort);
-    let syn;
-    let deployConfig = false;
 
-    if (deploy) {
-      try {
-          syn = new RegExp(deploy.upload);
-          deployConfig = fis.config.get('deploy')[deploy.item];
-      } catch (e) {
-          process.stderr.write('Can\'t find the fis deploy item -> ' + deploy + ' . \n');
-          throw e;
-      }
+    const browserCode = genBrowserCode(syncPort);
+    const syn = RegExp(deploy.upload);
+
+    let deployConfig;
+    try {
+        deployConfig  = fis.config.get('deploy')[deploy.item] || null;
+    } catch (e) {
+        process.stderr.write('Can\'t find the fis deploy item -> ' + deploy + ' . \n');
+        throw e;
     }
 
     const opt = {};
@@ -117,7 +114,7 @@ module.exports = function ({src, globalVarInjection, deploy, syncPort}, cb) {
     }
 
     function upload(file) {
-        if (!deployConfig || !syn.test(file.release)) {
+        if (!syn.test(file.release)) {
             return;
         }
 
@@ -135,7 +132,7 @@ module.exports = function ({src, globalVarInjection, deploy, syncPort}, cb) {
                     if(rule.replace && rule.replace.from) {
 
                         let reg = rule.replace.from;
-
+                        
                         if(typeof reg === 'string') {
                             reg = new RegExp(fis.util.escapeReg(reg), 'g');
                         } else if(!(reg instanceof RegExp)) {
@@ -154,7 +151,7 @@ module.exports = function ({src, globalVarInjection, deploy, syncPort}, cb) {
                             }
                     });
                 }
-            }
+            } 
         });
     }
 
@@ -163,33 +160,25 @@ module.exports = function ({src, globalVarInjection, deploy, syncPort}, cb) {
             delete collection[p];
         }
         fis.release(opt, function (ret) {
-            let handleHTMLFile = function (_, file) {
+
+            fis.util.map(ret.src, function (subpath, file) {
                 if (file.isHtmlLike) {
-                    let fileContent = file.getContent()
-                    if (globalVarInjection) {
-                      // remove the python template tag
-                      fileContent = fileContent.replace(/{% .* %}/g, '');
-
-                      // substitude the GLOBAL_VAR
-                      fileContent = fileContent.replace(/var\s*GLOBAL_VAR\s*=\s*({[^;]*)/gm, function () {
-                        if (typeof globalVarInjection === 'function') {
-                          return globalVarInjection(file.fullname);
-                        } else {
-                          return globalVarInjection;
-                        }
-                      })
-                    }
-
-                    fileContent += browserSyncCode; // 添加自动刷新代码
-
-                    file.setContent(fileContent);
+                    file.setContent(file.getContent() + browserCode);
                 }
                 collection[file.release] = file.getContent();
-                deploy && deploy.upload && deployConfig && upload(file);
-            };
+                deploy.upload && deployConfig && upload(file);
+            });
 
-            fis.util.map(ret.src, handleHTMLFile);
-            fis.util.map(ret.ids, handleHTMLFile);
+            fis.util.map(ret.ids, function (id, file) {
+                if (!collection.hasOwnProperty(file.release)) {
+                    if (file.isHtmlLike) {
+                        file.setContent(file.getContent() + browserCode);
+                    }
+                    collection[file.release] = file.getContent();
+                    deploy.upload && deployConfig && upload(file);
+                }
+            });
+
         });
         process.stdout.write('Fis released successfully! \n');
     }
@@ -224,6 +213,6 @@ module.exports = function ({src, globalVarInjection, deploy, syncPort}, cb) {
         cb(collection);
     }
     watch();
-
+    
     return collection;
 }
