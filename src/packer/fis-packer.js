@@ -46,7 +46,7 @@ module.exports = function ({src, globalVarInjection, deploy, syncPort}, cb) {
     const collection = {};
     const ignoredReg = /[\\\/][_\-.\s\w]+$/i;
     const browserSyncCode = genBrowserCode(syncPort);
-    let syn = new RegExp(/-{1000}/);
+    let syn;
     let deployConfig = false;
 
     if (deploy) {
