@@ -22,7 +22,7 @@ for (let key in net){
 }
 
 server.config.setRules(config.rules);
-server.config.setProxy(config.remote.https, config.remote.host, config.remote.port);
+server.config.setProxy(config.remote.https, config.remote.host || config.remote.host, config.remote.port);
 
 fis({
   src: prjRoot,
