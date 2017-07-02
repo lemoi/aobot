@@ -1,6 +1,8 @@
 # Aobot
 powerful development tools
 
+install: `sudo npm install -g byted-aobot --registry http://npm.byted.org`
+
 ```js
 module.exports = function (aobot) {
     aobot.route({
@@ -64,7 +66,7 @@ options = {
 ## service
 The service is a pipeline representing how to response with the corresponding route.
 
-### remote(options)
+#### remote(options)
 ```js
 options = {
     protocol: {
@@ -86,7 +88,7 @@ options = {
 }
 ```
 
-### local(options)
+#### local(options)
 ```js
 options = {
     path: {
@@ -96,7 +98,7 @@ options = {
 }
 ```
 
-### path(options)
+#### path(options)
 ```js
 options = {
     from: {
@@ -110,7 +112,7 @@ options = {
 }
 ```
 
-### fis(options)
+#### fis(options)
 ```js
 options = {
     project: {
