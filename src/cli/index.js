@@ -1,34 +1,18 @@
-const server = require('../server');
-const fis = require('../packer/fis-packer');
+const controller = require('../controller');
+const config = require('../config');
 const path = require('path');
-const { config, prjRoot } = require('./config');
-const net = require('os').networkInterfaces()
+var commander = require('commander');
+ 
+commander
+    .version(config.version)
+    .option('-p, --project <directory>', 'input the project directory')
+    .parse(process.argv);
 
-let localIp;
-
-for (let key in net){
-    if (net.hasOwnProperty(key)) {
-        let details = net[key];
-        if (details && details.length) {
-            for (let i = 0, len = details.length; i < len; i++){
-                const ip = String(details[i].address).trim();
-                if(ip && /^\d+(?:\.\d+){3}$/.test(ip) && ip !== '127.0.0.1'){
-                    localIp = ip;
-                    break;
-                }
-            }
-        }
+if (commander.project) {
+    config.project = commander.project;
+    if (!path.isAbsolute(config.project)) {
+        config.project = path.join(process.cwd(), config.project);
     }
 }
 
-server.config.setRules(config.rules);
-server.config.setProxy(config.remote.ip, config.remote.port);
-
-fis(prjRoot, config.fis.deploy, config.local.port, function (collection) {
-    server.config.setMapping(collection);
-
-    server.run(config.local.port, function () {
-        process.stdout.write('Aobot server is running. \n');
-        process.stdout.write(`You can access it in the address 127.0.0.1:${config.local.port} or ${localIp}:${config.local.port}. \n`);
-    });
-});
+config.get()(controller);

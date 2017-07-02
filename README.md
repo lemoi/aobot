@@ -1,58 +1,158 @@
 # Aobot
-
-The aim of creating this project is to improve the experience when you develop with some repositories related with backend service.
-
-Features should be included:
-
-1. The repository depended with `fis` can run in the local environment.
-2. It is easy enough to configure when debugging or testing in the mobile phone.
-
-### Install
-
-> sudo npm install -g byted-aobot
-
-### How to use?
-
-At the first step, you should create a file called  `aobot-conf.js` in your the project directory. 
-
-Note: it's better to add `aobot-conf.js` to the `.gitignore` list.
-
-The following is an exmaple of `ssad_fe/creative_wap`.
+powerful development tools
 
 ```js
-module.exports = {
-// development server ip and port
-    remote: {
-        ip: 'xx.x.xx.xx', 
-        port: xxxx
-    },
-// binding local port
-    local: {
-        port: xxxx
-    },
-// mapping rules
-    rules: [{
-        domain: ['ad.toutiao.com', 'i.snssdk.com'],
-        rule:[{
-            path: "^/static/(.*)",
-            resource: "/$1"
-        },
-        {
-            path: "/ad/m/index/"//,
-            //resource: "/template/creative_wap/page/home.html"
-        }]
-    }],
-// fis deploy config
-    fis: {
-        deploy: { 
-            item: 'xxxxxx', // -d
-            upload: '/template',
-            devSeverUsr: 'xxxxxx'
+module.exports = function (aobot) {
+    aobot.route({
+        host: 'ad.toutiao.com|i.snssdk.com',
+    }).pipe('path', {
+        from: '^/ad/static/(.*)',
+        to: '/$1'
+    }).pipe('fis', {
+        project: '',
+        deploy: 'houwenjie',
+        upload: {
+            filter: '/template',
+            ssh: {
+                ip: '10.6.131.79',
+                port: 22,
+                user: 'houwenjie'                
+            }
         }
+    }).pipe('remote', {
+        host: '10.6.131.79',
+        port: 17419
+    });
+    aobot.route({}).pipe('remote', {});
+    aobot.listen(8888);
+}
+```
+
+- route
+- service
+    - remote
+    - local
+    - path
+    - fis
+- listen
+
+
+## route(options)
+The route decides what kind of urls will be hijacked. 
+
+```js
+options = {
+    protocol: {
+        type: 'string',
+        required: false
+    },
+    host: {
+        type: 'string',
+        required: false       
+    },
+    port: {
+        type: 'number',
+        required: false
+    },
+    path: {
+        type: 'string',
+        required: false
     }
 }
 ```
 
-Second, login in your dev-server and open the corresponding backend service.
+## service
+The service is a pipeline representing how to response with the corresponding route.
 
-Finally, run `aobot` in your project directory.
+### remote(options)
+```js
+options = {
+    protocol: {
+        type: 'string',
+        required: false
+    },
+    host: {
+        type: 'string',
+        required: false     
+    }, // regex
+    port: {
+        type: 'number',
+        required: false
+    },
+    path: {
+        type: 'string',
+        required: false
+    }
+}
+```
+
+### local(options)
+```js
+options = {
+    path: {
+        type: 'string',
+        required: true
+    }
+}
+```
+
+### path(options)
+```js
+options = {
+    from: {
+        type: 'string',
+        required: true
+    },
+    to: {
+        type: 'string',
+        required: true
+    }
+}
+```
+
+### fis(options)
+```js
+options = {
+    project: {
+        type: 'string',
+        require: false        
+    },
+    deploy: {
+        type: 'string',
+        require: true,
+    },
+    upload: {
+        type: 'object',
+        require: false
+    }
+}
+
+upload = {
+    filter: {
+        type: 'string',
+        require: false
+    },
+    ssh: {
+         type: 'object',
+         require: false       
+    }
+}
+
+ssh = {
+    ip: {
+        type: 'string',
+        required: true
+    },
+    port: {
+        type: 'number',
+        required: false
+    },
+    user: {
+        type: 'string',
+        required: true        
+    }
+}
+```
+
+## listen(port)
+The function called to listen port.

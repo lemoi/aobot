@@ -1,14 +1,15 @@
 const path = require('path');
 const fis = require('fis-bytedance');
 const chokidar = require('chokidar');
-const conf = 'fis-conf.js';
 const spawn = require('child_process').spawn;
 const url = require('url');
-const genBrowserCode = require('../sync/browser');
+const browser = require('../sync/browser');
 const socket = require('../sync/socket');
+const fullpath = require('../utils/fullpath');
+const log = require('../utils/log');
 
-function runRcv(usr, address, port, cb) {
-    const ssh = spawn('ssh', [usr + '@' + address, '\""fisrcv ' + port + '\""']);
+function runRcv(ssh, fisrcvPort, cb) {
+    ssh = spawn('ssh', ['-p', ssh.port || 22, ssh.user + '@' + ssh.ip, '\""fisrcv ' + fisrcvPort + '\""']);
     let killed = false;
 
     ssh.on('error', (err) => {
@@ -36,23 +37,27 @@ function runRcv(usr, address, port, cb) {
     });
 }
 
+const conf = 'fis-conf.js';
+
 // @return mapping src
-module.exports = function (src, deploy, syncPort, cb) {
-    fis.project.setProjectRoot(src);
-    require(path.join(src, conf));
+module.exports = function ({ project, deploy, upload }, cb) {
+
+    project = fullpath(project || '.');
+    fis.project.setProjectRoot(project);
+
+    require(path.join(project, conf));
+
     //console.log(fis.config.get('settings'))
     const files = fis.project.getSource();
-    const collection = {};
     const ignoredReg = /[\\\/][_\-.\s\w]+$/i;
-
-    const browserCode = genBrowserCode(syncPort);
-    const syn = RegExp(deploy.upload);
+    const context = {};
+    // const browserCode = genBrowserCode(syncPort);
 
     let deployConfig;
     try {
-        deployConfig  = fis.config.get('deploy')[deploy.item] || null;
+        deployConfig  = fis.config.get('deploy')[deploy] || null;
     } catch (e) {
-        process.stderr.write('Can\'t find the fis deploy item -> ' + deploy + ' . \n');
+        log.error('fis: can\'t find the fis deploy item -> ' + deploy);
         throw e;
     }
 
@@ -63,9 +68,10 @@ module.exports = function (src, deploy, syncPort, cb) {
         opt.srcCache.push(file.realpath);
     });
 
+    let timer = null;
     function listener(type){
         return function (path) {
-            var p, timer;
+            var p;
             if(ignoredReg.test(path)){
                 var path = fis.util(path);
                 if (type == 'add' || type == 'change') {
@@ -89,18 +95,16 @@ module.exports = function (src, deploy, syncPort, cb) {
                 }
                 clearTimeout(timer);
                 timer = setTimeout(function() {
-                    process.stdout.write(`modify: ${path}. \n`);
-                    release(opt);
-                    socket.refresh();
-                }, 500);
+                    log.info(`fis: modify -> ${path}`);
+                    release(opt, () => socket.refresh());
+                }, 200);
             }
         };
     }
 
     function watch() {
-        chokidar.watch(src, {
+        chokidar.watch(project, {
             ignored : /(^|[\/\\])\../,
-            usePolling: fis.config.get('project.watch.usePolling', null),
             persistent: true,
             ignoreInitial: true
         })
@@ -113,8 +117,10 @@ module.exports = function (src, deploy, syncPort, cb) {
         });
     }
 
-    function upload(file) {
-        if (!syn.test(file.release)) {
+    const pathRegex = RegExp(upload.filter);
+
+    function uploadFile(file) {
+        if (!pathRegex.test(file.release)) {
             return;
         }
 
@@ -136,7 +142,7 @@ module.exports = function (src, deploy, syncPort, cb) {
                         if(typeof reg === 'string') {
                             reg = new RegExp(fis.util.escapeReg(reg), 'g');
                         } else if(!(reg instanceof RegExp)) {
-                            process.stderr.write('invalid deploy.replace.from [' + reg + ']');
+                            log.error('fis: invalid deploy.replace.from [' + reg + ']');
                         }
 
                         content = content.replace(reg, rule.replace.to);
@@ -144,10 +150,10 @@ module.exports = function (src, deploy, syncPort, cb) {
                     fis.util.upload(rule.receiver, null, { to : rule.to + release }, content, file.subpath,
                         function (err, data) {
                             if (err) {
-                                process.stderr.write('error: upload error -> from: ' + release
-                                + 'to: ' + rule.to + release + '. \n');
+                                log.error('fis: upload error -> from: ' + release
+                                + 'to: ' + rule.to + release);
                             } else {
-                                process.stdout.write('upload: ' + release + '. \n');
+                                log.default('fis: uploaded -> ' + release);
                             }
                     });
                 }
@@ -155,64 +161,58 @@ module.exports = function (src, deploy, syncPort, cb) {
         });
     }
 
-    function release(opt) {
-        for (let p in collection) {
-            delete collection[p];
+    function release(opt, done) {
+        for (let p in context) {
+            delete context[p];
         }
         fis.release(opt, function (ret) {
-
-            fis.util.map(ret.src, function (subpath, file) {
-                if (file.isHtmlLike) {
-                    file.setContent(file.getContent() + browserCode);
-                }
-                collection[file.release] = file.getContent();
-                deploy.upload && deployConfig && upload(file);
-            });
-
-            fis.util.map(ret.ids, function (id, file) {
-                if (!collection.hasOwnProperty(file.release)) {
+            browser.code((code) => {
+                fis.util.map(ret.src, function (subpath, file) {
                     if (file.isHtmlLike) {
-                        file.setContent(file.getContent() + browserCode);
+                        file.setContent(file.getContent() + code);
                     }
-                    collection[file.release] = file.getContent();
-                    deploy.upload && deployConfig && upload(file);
-                }
-            });
+                    context[file.release] = file.getContent();
+                    upload && upload.ssh && uploadFile(file);
+                });
 
+                fis.util.map(ret.ids, function (id, file) {
+                    if (!context.hasOwnProperty(file.release)) {
+                        if (file.isHtmlLike) {
+                            file.setContent(file.getContent() + code);
+                        }
+                        context[file.release] = file.getContent();
+                        upload && upload.ssh && uploadFile(file);
+                    }
+                });
+                log.success('fis: released successfully!');
+            });
+            done();
         });
-        process.stdout.write('Fis released successfully! \n');
     }
 
-    if (deployConfig) {
-        const receivers = {};
-        deployConfig.forEach(function (rule) {
-            const rcv = url.parse(rule.receiver);
-            receivers[rule.receiver] = {
-                hostname: rcv.hostname,
-                port: rcv.port
+    const receivers = {};
+
+    deployConfig.forEach(function (rule) {
+        const rcv = url.parse(rule.receiver);
+        receivers[rule.receiver] = {
+            hostname: rcv.hostname,
+            port: rcv.port
+        }
+    });
+
+    for (let rcv in receivers) {
+        const receiver = receivers[rcv];
+        runRcv(upload.ssh, receiver.port, function (type, data) {
+
+            if (type == 'success'){
+                log.success('fis: receiver(' + rcv + ') started successfully!');
+                release(opt, () => cb(context));
+            } else {
+                throw new Error(data);
             }
         });
-
-        for (let rcv in receivers) {
-            const receiver = receivers[rcv];
-            const usr = deploy.devSeverUsr || deploy.item;
-            runRcv(usr, receiver.hostname, receiver.port, function (type, data) {
-
-                if (type == 'success'){
-                    process.stdout.write('Receiver(' + rcv + ') started successfully! \n');
-                    release(opt);
-                    cb(collection);
-                } else {
-                    throw new Error(data);
-                }
-            });
-        }
-
-    } else {
-        release(opt);
-        cb(collection);
     }
+
     watch();
-    
-    return collection;
+    return context;
 }

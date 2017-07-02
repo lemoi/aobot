@@ -1,3 +1,4 @@
+const log = require('../utils/log');
 const ws = {
     instance: {},
     id: 0,
@@ -9,11 +10,11 @@ const ws = {
 
             socket.on('disconnect', function () {
                 delete ws.instance[id];
-                process.stdout.write(`Disconnect to the browser${id}. \n`);
+                log.warn(`socket: disconnect to the browser${id}.`);
             });
 
             ws.instance[id] = socket;
-            process.stdout.write(`Connect to the browser${id} successfully. \n`);
+            log.success(`socket: connect to the browser${id} successfully.`);
         });
     },
 
@@ -25,8 +26,10 @@ const ws = {
 
     refresh: function () {
         ws.emit('refresh', '');
-        process.stdout.write('Page refreshing. \n')
+        log.info('socket: refreshing.')
     }
 }
+
+let i = 0;
 
 module.exports = ws;
