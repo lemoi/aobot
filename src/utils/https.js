@@ -4,12 +4,12 @@ const https = require('https');
 const ssl = require('../ssl');
 const tls = require('tls');
 const pki = require('node-forge').pki;
+const parseurl = require('parseurl');
 
 function createServer(handler) {
     return function (req, cltSocket, head) {
         
-        const srvUrl = url.parse(`http://${req.url}`);
-
+        const srvUrl = parseurl(req);
         createFakeWebSite(srvUrl.hostname, handler, (port) => {
             const srvSocket = net.connect(port, '127.0.0.1', () => {
 

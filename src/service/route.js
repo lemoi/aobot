@@ -18,10 +18,10 @@ module.exports = function ({ protocol, host, port, path }, tasks) {
                 tasks[i](req, res, () => stop = false);
             }
             if (!stop) {
-                res.writeHead(404, 'Service not found');
+                next();
             }
         } else {
             next();
-        }
+        } 
     }
 }

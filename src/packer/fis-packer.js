@@ -7,6 +7,7 @@ const browser = require('../sync/browser');
 const socket = require('../sync/socket');
 const fullpath = require('../utils/fullpath');
 const log = require('../utils/log');
+const watch = require('../sync/watch');
 
 function runRcv(ssh, fisrcvPort, cb) {
     ssh = spawn('ssh', ['-p', ssh.port || 22, ssh.user + '@' + ssh.ip, '\""fisrcv ' + fisrcvPort + '\""']);
@@ -42,7 +43,6 @@ const conf = 'fis-conf.js';
 // @return mapping src
 module.exports = function ({ project, deploy, upload }, cb) {
 
-    project = fullpath(project || '.');
     fis.project.setProjectRoot(project);
 
     require(path.join(project, conf));
@@ -100,21 +100,6 @@ module.exports = function ({ project, deploy, upload }, cb) {
                 }, 200);
             }
         };
-    }
-
-    function watch() {
-        chokidar.watch(project, {
-            ignored : /(^|[\/\\])\../,
-            persistent: true,
-            ignoreInitial: true
-        })
-        .on('add', listener('add'))
-        .on('change', listener('change'))
-        .on('unlink', listener('unlink'))
-        .on('unlinkDir', listener('unlinkDir'))
-        .on('error', function(err) {
-            throw err;
-        });
     }
 
     const pathRegex = RegExp(upload.filter);
@@ -213,6 +198,14 @@ module.exports = function ({ project, deploy, upload }, cb) {
         });
     }
 
-    watch();
+    watch(project, {
+        'add': listener('add'),
+        'change': listener('change'),
+        'unlink': listener('unlink'),
+        'unlinkDir': listener('unlinkDir'),
+        'error': (err) => {
+            throw err
+        }
+    });
     return context;
 }

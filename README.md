@@ -1,7 +1,9 @@
 # Aobot
 powerful development tools
 
-install: `sudo npm install -g byted-aobot --registry http://npm.byted.org`
+install: `npm install -g byted-aobot --registry http://npm.byted.org`
+
+note: if it failed, try to use **sudo**.
 
 ```js
 module.exports = function (aobot) {
@@ -12,19 +14,20 @@ module.exports = function (aobot) {
         to: '/$1'
     }).pipe('fis', {
         project: '',
-        deploy: 'houwenjie',
+        deploy: 'xxx',
         upload: {
             filter: '/template',
             ssh: {
                 ip: '10.6.131.79',
                 port: 22,
-                user: 'houwenjie'                
+                user: 'xxx'                
             }
         }
     }).pipe('remote', {
         host: '10.6.131.79',
         port: 17419
     });
+
     aobot.route({}).pipe('remote', {});
     aobot.listen(8888);
 }

@@ -16,7 +16,7 @@ module.exports = function(ssl, options, req, res) {
 
     remoteRequest.on('error', function(e) {
         res.writeHead(502, 'Proxy fetch failed');
-        res.end();
+        res.end('Proxy fetch failed');
         remoteRequest.end();
     });
 

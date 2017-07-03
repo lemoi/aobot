@@ -1,7 +1,7 @@
-const local = require('../service/local');
+const map = require('../service/map');
 const check = require('../utils/check');
 const fullpath = require('../utils/fullpath');
-
+const local = require('../packer/local-packer');
 const fields = {
     path: {
         type: 'string',
@@ -11,6 +11,8 @@ const fields = {
 
 module.exports = function (schedule, tasks, options) {
     check('local', options, fields);
-    schedule.record('local');
-    tasks.push(local(fullpath(options.path)));
+    schedule.wait('local');
+    tasks.push(map(
+        local(fullpath(options.path), () => schedule.notify('local'))
+    ));
 }

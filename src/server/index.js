@@ -1,22 +1,22 @@
 const express = require('express');
 const http = require('http');
 const https = require('../utils/https');
+const transmit = require('../utils/transmit');
 const socket = require('../sync/socket');
 const app = express();
 const ca_download = require('../ssl/ca_download');
 
 function register(service) {
-    app.use('/', service);
+    app.use(service);
 }
 
 function run(port, cb) {
     const server = http.createServer();
-
     server.on('request', app);
     server.on('connect', https.createServer(app));
     socket.start(server);
     register(ca_download);
-    
+    register(transmit({}));
     server.listen(port, cb);
 }
 

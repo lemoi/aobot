@@ -1,6 +1,7 @@
 const fis = require('../packer/fis-packer.js');
 const map = require('../service/map');
 const check = require('../utils/check');
+const fullpath = require('../utils/fullpath');
 
 const rootFields = {
     project: {
@@ -53,6 +54,8 @@ module.exports = function (schedule, tasks, options) {
     }
 
     schedule.wait('fis');
+
+    options.project = fullpath(options.project || '.');
 
     tasks.push(map(
         fis(options, () => schedule.notify('fis'))

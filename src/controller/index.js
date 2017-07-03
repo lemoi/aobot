@@ -2,7 +2,6 @@ const server = require('../server');
 const check = require('../utils/check');
 const log = require('../utils/log');
 const browser = require('../sync/browser');
-const localip = require('../utils/localip');
 
 /*
     total: {
@@ -82,7 +81,7 @@ function prepare(times, done) {
         if (times-- > 0) {
             setTimeout(() => schedule.trying(processing, done), delay);
         } else {
-            log.error('Service load faild')
+            log.error(`failed to load: ${format(waiting)}`);
             throw Error('ServiceLoadingError');
         }
     }
@@ -103,8 +102,6 @@ function listen(port) {
             });
             server.run(port, () => {
                 log.success('Aobot started successfully!');
-                log.info(`You can access services in the address 127.0.0.1:${port} or ${localip}:${port}`);
-                log.info(`Download the https root certificate in ${require('../ssl/config').ca_download_url}`);
             });
         }
     );
@@ -121,6 +118,7 @@ function factory(tasks) {
         try {
             service = require('./' + service);
         } catch (e) {
+            throw e;
             log.error('Service ' + service + ' is not supported by aobot');
             throw Error('ServiceTypeError');
         }
