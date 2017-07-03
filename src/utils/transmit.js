@@ -8,6 +8,7 @@ module.exports = function ({ protocol, host, port, path }) {
         }
         const ssl = protocol === 'https';
         const URL = parseurl(req);
+
         const options = {
             method: req.method,
             headers: req.headers,
@@ -17,6 +18,8 @@ module.exports = function ({ protocol, host, port, path }) {
             timeout: 2000
         };
 
+        delete options.headers['accept-encoding'];
+        
         response(ssl, options, req, res);
     }
 }
