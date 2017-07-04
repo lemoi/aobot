@@ -6,7 +6,7 @@ module.exports = function ({ protocol, host, port, path }, tasks) {
     path && (path = RegExp(path));
 
     return function (req, res, next) {
-        const URL = parseurl(req.url);
+        const URL = parseurl(req);
         if ((!protocol || req.protocol === protocol) &&
             (!host || host.test(req.hostname)) &&
             (!port || URL.port === port) &&
