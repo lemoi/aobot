@@ -3,10 +3,8 @@ const parseurl = require('parseurl');
 
 module.exports = function ({ protocol, host, port, path }) {
     return function(req, res) {
-        if (!protocol) {
-            protocol = req.protocol
-        }
-        const ssl = protocol === 'https';
+
+        const ssl = protocol ? protocol === 'https' : req.secure;
         const URL = parseurl(req);
 
         const options = {
