@@ -4,7 +4,7 @@
   "description": "A development tool used for debugging and deployment.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "genssl": "node src/ssl/gen.js"
+    "genssl": "node src/ssl/build.js"
   },
   "author": "Wyatt Hou",
   "bin": {
