@@ -6,26 +6,26 @@ const fullpath = require('../utils/fullpath');
 const rootFields = {
     project: {
         type: 'string',
-        require: false        
+        required: false        
     },
     deploy: {
         type: 'string',
-        require: true,
+        required: true,
     },
     upload: {
         type: 'object',
-        require: false
+        required: false
     }
 };
 
 const uploadFields = {
     filter: {
         type: 'string',
-        require: false
+        required: false
     },
     ssh: {
          type: 'object',
-         require: false       
+         required: false       
     }
 };
 

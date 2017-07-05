@@ -1,5 +1,5 @@
 {
-  "name": "byted-aobot",
+  "name": "aobot",
   "version": "1.0.0-alpha-3.1",
   "description": "A development tool used for debugging and deployment.",
   "scripts": {
