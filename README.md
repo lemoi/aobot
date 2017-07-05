@@ -1,5 +1,5 @@
 # Aobot
-A development proxy tool like Charles but more powerful
+A development proxy tool like Charles but more powerful.
 
 Install: `npm install -g aobot`
 
@@ -149,52 +149,6 @@ options = {
 }
 ```
 
-#### fis(options)
-Fis2 config options
-
-```js
-options = {
-    project: {
-        type: 'string',
-        required: false        
-    },
-    deploy: {
-        type: 'string',
-        required: true,
-    },
-    upload: {
-        type: 'object',
-        required: false
-    }
-}
-
-upload = {
-    filter: {
-        type: 'string',
-        required: false
-    },
-    ssh: {
-         type: 'object',
-         required: false       
-    }
-}
-
-ssh = {
-    ip: {
-        type: 'string',
-        required: true
-    },
-    port: {
-        type: 'number',
-        required: false
-    },
-    user: {
-        type: 'string',
-        required: true        
-    }
-}
-```
-
 ### listen(port)
 The function called to listen port, only can be called once.
 
@@ -205,7 +159,7 @@ aobot.route({}).pipe('remote', {}).listen(3000)
 aobot.route({}).pipe('remote', {})
 aobot.listen(30000)
 
-// but, if you have multiple route
+// but, if you have multiple routes
 aobot.route({
     host: 'google.com'
 })...
