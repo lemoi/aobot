@@ -5,15 +5,16 @@ const transmit = require('../utils/transmit');
 const socket = require('../sync/socket');
 const app = express();
 const ca_download = require('../ssl/ca_download');
+const connect =  require('../utils/connect');
 
 function register(service) {
     app.use(service);
 }
 
-function run(port, cb) {
+function run(ssl, port, cb) {
     const server = http.createServer();
     server.on('request', app);
-    server.on('connect', https.createServer(app));
+    server.on('connect', ssl ? https.createServer(app) : connect);
     socket.start(server);
     register(ca_download);
     register(transmit({}));

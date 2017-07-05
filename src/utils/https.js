@@ -4,12 +4,12 @@ const https = require('https');
 const ssl = require('../ssl');
 const tls = require('tls');
 const pki = require('node-forge').pki;
-const parseurl = require('parseurl');
 
 function createServer(handler) {
     return function (req, cltSocket, head) {
         
-        const srvUrl = parseurl(req);
+        const srvUrl = url.parse(`http://${req.url}`);
+
         createFakeWebSite(srvUrl.hostname, handler, (port) => {
             const srvSocket = net.connect(port, '127.0.0.1', () => {
 
@@ -20,9 +20,7 @@ function createServer(handler) {
                 srvSocket.pipe(cltSocket);
                 cltSocket.pipe(srvSocket);
             });
-            srvSocket.on('error', (e) => {
-              console.error(e);
-            });
+            srvSocket.on('error', (e) => log.error(`Https internal error`));
         });
     }
 }
@@ -49,9 +47,7 @@ function createFakeWebSite(host, handler, callback) {
 
     fake.on('request', handler);
 
-    fake.on('error', (e) => {
-        console.error(e);
-    });
+    fake.on('error', (e) => log.error(`Https internal error`));
 }
 
 module.exports.createServer = createServer;

@@ -32,7 +32,7 @@ module.exports = function (aobot) {
     aobot.listen(8888);
 }
 ```
-
+- enableSSL
 - route
 - service
     - remote
@@ -41,6 +41,9 @@ module.exports = function (aobot) {
     - fis
 - listen
 
+## enableSSL()
+The default behavior of treating https is just transmiting the requests.
+So, you should call this to enable https proxy.
 
 ## route(options)
 The route decides what kind of urls will be hijacked. 

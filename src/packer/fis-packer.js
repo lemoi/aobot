@@ -108,7 +108,6 @@ module.exports = function ({ project, deploy, upload }, cb) {
         if (!pathRegex.test(file.release)) {
             return;
         }
-
         const release = file.release;
         let content = file.getContent();
 

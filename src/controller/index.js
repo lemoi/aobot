@@ -17,6 +17,7 @@ const schedule = {
     total: {},
     done: {},
     runningFlag: false,
+    ssl: false,
     record: function (which) {
         this.set(this.total, which);
         this.set(this.done, which);
@@ -54,6 +55,9 @@ const schedule = {
             log.error('Sorry, aobot is running');
             throw Error('RunningError');
         }
+    },
+    enableSSL: function () {
+        this.ssl = true;
     }
 };
 
@@ -100,7 +104,7 @@ function listen(port) {
             schedule.cache.forEach(({ options, tasks }) => {
                 server.register(require('../service/route')(options, tasks));
             });
-            server.run(port, () => {
+            server.run(schedule.ssl, port, () => {
                 log.success('Aobot started successfully!');
             });
         }
@@ -159,3 +163,4 @@ function route(options) {
 
 module.exports.route = route
 module.exports.listen = listen;
+module.exports.enableSSL = schedule.enableSSL.bind(schedule);
