@@ -143,7 +143,7 @@ options = {
         required: true
     },
     to: {
-        type: 'string' | 'function,
+        type: 'string' | 'function',
         required: true
     }
 }
@@ -216,4 +216,4 @@ aobot.route({
 
 // it's better to use
 aobot.listen(3000)
-```js
+```
