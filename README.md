@@ -1,7 +1,7 @@
 # Aobot
 A development proxy tool like Charles but more powerful
 
-Install: `npm install -g byted-aobot`
+Install: `npm install -g aobot`
 
 note: if it failed, try to use **sudo**.
 
