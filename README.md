@@ -1,7 +1,7 @@
 # Aobot
 A development proxy tool like Charles but more powerful
 
-Install: `npm install -g byted-aobot --registry http://npm.byted.org`
+Install: `npm install -g byted-aobot`
 
 note: if it failed, try to use **sudo**.
 
@@ -58,7 +58,6 @@ module.exports = function (aobot) {
     - local
     - path
     - header
-    - fis
 - listen
 
 ### enableSSL()
@@ -160,52 +159,6 @@ options = {
     del: {
         type: 'array',
         required: false
-    }
-}
-```
-
-#### fis(options)
-Fis2 config options
-
-```js
-options = {
-    project: {
-        type: 'string',
-        required: false        
-    },
-    deploy: {
-        type: 'string',
-        required: true,
-    },
-    upload: {
-        type: 'object',
-        required: false
-    }
-}
-
-upload = {
-    filter: {
-        type: 'string',
-        required: false
-    },
-    ssh: {
-         type: 'object',
-         required: false       
-    }
-}
-
-ssh = {
-    ip: {
-        type: 'string',
-        required: true
-    },
-    port: {
-        type: 'number',
-        required: false
-    },
-    user: {
-        type: 'string',
-        required: true        
     }
 }
 ```
