@@ -1,17 +1,25 @@
 const find = require('../utils/find');
 const watch = require('../sync/watch');
+const path = require('path');
+const fs = require('fs');
 
-module.exports = function (path, done) {
-    const context = find(path);
+module.exports = function (root, done) {
+    const context = find(root);
 
-    watch(path, {
-        'add': (path) => find(path, context),
-        'change': (path) => find(path, context),
-        'unlink': (path) => delete context[path],
-        'unlinkDir': (path) => {
+    for (let file in context) {
+        context['/' + path.posix.relative(root, file)] = context[file];
+        delete context[file];
+    }
+
+    watch(root, {
+        'add': (p) => context['/' + path.posix.relative(root, p)] = fs.readFileSync(p, 'utf-8'),
+        'change': (p) => context['/' + path.posix.relative(root, p)] = fs.readFileSync(p, 'utf-8'),
+        'unlink': (p) => delete context['/' + path.posix.relative(root, p)],
+        'unlinkDir': (p) => {
             for (let i in context) {
-                if (i.indexOf(path) === 0) {
+                if (path.join(root, i).indexOf(p) === 0) {
                     delete context[i];
+                    return;
                 }
             }
         },

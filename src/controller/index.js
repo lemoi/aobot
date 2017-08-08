@@ -122,7 +122,6 @@ function factory(tasks) {
         try {
             service = require('./' + service);
         } catch (e) {
-            throw e;
             log.error('Service ' + service + ' is not supported by aobot');
             throw Error('ServiceTypeError');
         }

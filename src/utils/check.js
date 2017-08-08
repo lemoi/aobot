@@ -23,4 +23,9 @@ module.exports = function (name, obj, fields) {
             }
         }
     }
+    for (let key in obj) {
+        if (!fields.hasOwnProperty(key)) {
+            throw Error('unrecongnized property [' + name + ' -> ' + key + ']. ');            
+        }
+    }
 }

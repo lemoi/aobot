@@ -14,6 +14,6 @@ const fields = {
 
 module.exports = function (schedule, tasks, options) {
     check('path', options, fields);
-    schedule.record('replace');
+    schedule.record('path');
     tasks.push(replace(options.from, options.to));
 }

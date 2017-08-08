@@ -4,10 +4,10 @@ const ioCode = fs.readFileSync(path.join(__dirname, 'socket.io.js'));
 
 module.exports = {
     _port: null,
-    _sequne: [],
+    _tasks: [],
     code: function (cb) {
         if (this._port === null) {
-            this._sequne.push(cb);
+            this._tasks.push(cb);
         } else {
             cb(`
             <script>
@@ -30,6 +30,6 @@ module.exports = {
     },
     init: function (port) {
         this._port = port;
-        this._sequne.forEach((cb) => cb(this._port));
+        this._tasks.forEach((cb) => cb(this._port));
     }
 };

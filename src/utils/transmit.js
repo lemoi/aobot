@@ -11,13 +11,11 @@ module.exports = function ({ protocol, host, port, path }) {
             method: req.method,
             headers: req.headers,
             path: path || URL.path,
-            host: host || URL.host || req.hostname,
+            host: host || URL.hostname || req.hostname,
             port: port || URL.port || (ssl ? 443 : 80),
             timeout: 2000
         };
 
-        delete options.headers['accept-encoding'];
-        
         response(ssl, options, req, res);
     }
 }
